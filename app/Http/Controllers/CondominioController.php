@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Condominio;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Imports\CondominioImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class CondominioController extends Controller
@@ -38,17 +40,27 @@ class CondominioController extends Controller
      */
     public function update(Request $request)
     {
-        $condominio = Auth::user()->condominio;
+        $condoId = (auth()->user()->role === 'admin')
+            ? session('admin_condominio_id')
+            : auth()->user()->condominio_id;
+
+        if (!$condoId) {
+            return redirect()->back()->withErrors(['erro' => 'Selecione um condomínio antes de salvar.']);
+        }
+
+        $condominio = Condominio::findOrFail($condoId);
 
         $request->validate([
             'nome' => 'required|string|max:255',
             'total_blocos' => 'required|integer|min:1',
             'andares_por_bloco' => 'nullable|integer|min:1',
+            'unidades_por_andar' => 'nullable|integer|min:1',
         ]);
+
 
         $condominio->update($request->all());
 
-        return redirect()->route('condominio.edit')->with('success', 'Configurações do condomínio atualizadas!');
+        return redirect()->back()->with('success', 'Configurações atualizadas com sucesso!');
     }
 
     public function downloadExemplo()
@@ -134,6 +146,34 @@ class CondominioController extends Controller
             return redirect()->back()->with('status', 'Condomínio removido com sucesso! Administradores globais foram preservados.');
         } catch (\Exception $e) {
             return redirect()->back()->with('status', 'Erro inesperado: ' . $e->getMessage());
+        }
+    }
+
+    public function importar(Request $request)
+    {
+        // O nome aqui deve ser 'arquivo_excel' para bater com o seu HTML
+        $request->validate([
+            'arquivo_excel' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        $condominioId = (auth()->user()->role === 'admin')
+            ? session('admin_condominio_id')
+            : auth()->user()->condominio_id;
+
+        if (!$condominioId) {
+            return redirect()->back()->withErrors(['arquivo_excel' => 'Selecione um condomínio primeiro.']);
+        }
+
+        try {
+            // Note o uso do arquivo_excel aqui também
+            \Maatwebsite\Excel\Facades\Excel::import(
+                new \App\Imports\MoradoresImport($condominioId),
+                $request->file('arquivo_excel')
+            );
+
+            return redirect()->back()->with('success', 'Importação concluída!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['arquivo_excel' => 'Erro: ' . $e->getMessage()]);
         }
     }
 }

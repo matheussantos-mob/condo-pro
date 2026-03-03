@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            
+
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <header class="mb-6">
                     <h2 class="text-lg font-medium text-gray-900">Configurações Gerais</h2>
@@ -15,9 +15,9 @@
                 </header>
 
                 @if (session('success'))
-                    <div class="mb-6 p-4 text-sm text-green-600 bg-green-50 rounded-lg">
-                        {{ session('success') }}
-                    </div>
+                <div id="success-alert" class="mb-6 p-4 text-sm text-green-600 bg-green-50 rounded-lg">
+                    {{ session('success') }}
+                </div>
                 @endif
 
                 <form method="post" action="{{ route('condominio.update') }}" class="space-y-6">
@@ -70,7 +70,12 @@
                         <p class="text-sm font-semibold mb-2">2. Importar Unidades</p>
                         <form action="{{ route('condominio.importar') }}" method="POST" enctype="multipart/form-data">
                             @csrf
+                            {{-- Mantenha o nome que preferir, mas deve ser igual no Controller --}}
                             <input type="file" name="arquivo_excel" class="block w-full text-sm text-gray-500 mb-4 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-gray-300 file:text-xs file:font-semibold" />
+
+                            {{-- Adicione isso para ver o erro se a validação falhar --}}
+                            <x-input-error class="mb-4" :messages="$errors->get('arquivo_excel')" />
+
                             <x-primary-button class="w-full justify-center">
                                 {{ __('Iniciar Importação') }}
                             </x-primary-button>
@@ -87,4 +92,17 @@
 
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const alert = document.getElementById('success-alert');
+            if (alert) {
+                setTimeout(() => {
+                    alert.style.transition = "opacity 0.5s ease";
+                    alert.style.opacity = "0";
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            }
+        });
+    </script>
 </x-app-layout>

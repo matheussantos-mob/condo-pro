@@ -7,25 +7,36 @@ use Illuminate\Support\Facades\Auth;
 
 trait BelongsToCondominio
 {
-    protected static function bootBelongsToCondominio()
+    protected static function booted()
     {
         static::addGlobalScope('condominio', function (Builder $builder) {
-            if (Auth::check()) {
-                $user = Auth::user();
+            if (auth()->check()) {
+                $user = auth()->user();
 
-                if ($user->role === 'admin') {
-                    if (session()->has('admin_condominio_id')) {
-                        $builder->where($builder->getQuery()->from . '.condominio_id', session('admin_condominio_id'));
-                    }
+                $condoId = ($user->role === 'admin')
+                    ? session('admin_condominio_id')
+                    : $user->condominio_id;
+
+                if ($condoId) {
+                    $builder->where($builder->getQuery()->from . '.condominio_id', $condoId);
                 } else {
-                    $builder->where($builder->getQuery()->from . '.condominio_id', $user->condominio_id);
+                    if ($user->role !== 'admin') {
+                        $builder->whereRaw('1 = 0');
+                    }
                 }
             }
         });
 
         static::creating(function ($model) {
-            if (Auth::check() && Auth::user()->condominio_id) {
-                $model->condominio_id = Auth::user()->condominio_id;
+            if (Auth::check()) {
+                $user = Auth::user();
+                $condoId = ($user->role === 'admin')
+                    ? session('admin_condominio_id')
+                    : $user->condominio_id;
+
+                if ($condoId) {
+                    $model->condominio_id = $condoId;
+                }
             }
         });
     }

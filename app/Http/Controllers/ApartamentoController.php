@@ -22,21 +22,39 @@ class ApartamentoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'bloco' => 'required',
-            'numero' => [
-                'required',
-                Rule::unique('apartamentos')->where(function ($query) use ($request) {
-                    return $query->where('bloco', $request->bloco)
-                        ->where('numero', $request->numero);
-                }),
-            ],
+            'apartamento_id' => 'required|exists:apartamentos,id',
+            'descricao' => 'required|string|max:255',
+            'setor_estoque' => 'required',
         ], [
-            'numero.unique' => 'Esta unidade já está cadastrada neste bloco.'
+            'apartamento_id.required' => 'Você precisa selecionar um apartamento válido da lista.',
+            'apartamento_id.exists' => 'O apartamento selecionado é inválido.'
         ]);
 
-        Apartamento::create($request->all());
+        $condominioId = (auth()->user()->role === 'admin')
+            ? session('admin_condominio_id')
+            : auth()->user()->condominio_id;
 
-        return redirect()->back()->with('status', 'Unidade cadastrada com sucesso!');
+        if (!$condominioId) {
+            return redirect()->back()->withErrors(['erro' => 'Selecione um condomínio no menu lateral antes de cadastrar.']);
+        }
+
+        $numeros = rand(100, 999);
+        $letras = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 1);
+        $codigo = $numeros . $letras;
+
+        Encomenda::create([
+            'user_id' => auth()->id(),
+            'apartamento_id' => $request->apartamento_id,
+            'descricao' => $request->descricao,
+            'setor_estoque' => $request->setor_estoque,
+            'codigo_retirada' => $codigo,
+            'recebido_por' => Auth::user()->name,
+            'status' => 'pendente',
+            'condominio_id' => $condominioId,
+            'cadastrado_por_id' => Auth::id(),
+        ]);
+
+        return redirect()->back()->with('status', 'Encomenda registrada!');
     }
 
     public function destroy(Apartamento $apartamento)

@@ -27,7 +27,7 @@ class Encomenda extends Model
         'entregue_por_id',
         'cadastrado_por_id',
     ];
-    
+
     protected $casts = [
         'entregue_em' => 'datetime',
         'notificado_em' => 'datetime',
@@ -41,5 +41,20 @@ class Encomenda extends Model
     public function condominio()
     {
         return $this->belongsTo(Condominio::class);
+    }
+
+    public function cadastradoPor()
+    {
+        return $this->belongsTo(User::class, 'cadastrado_por_id');
+    }
+
+    public function notificadoPor()
+    {
+        return $this->belongsTo(User::class, 'notificado_por_id');
+    }
+
+    public function entreguePor()
+    {
+        return $this->belongsTo(User::class, 'entregue_por_id');
     }
 }

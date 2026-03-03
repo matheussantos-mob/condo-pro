@@ -105,10 +105,16 @@ class AdminController extends Controller
 
     public function alternarContexto(Request $request)
     {
-        $request->validate(['condominio_id' => 'required|exists:condominios,id']);
+        $request->validate([
+            'condominio_id' => 'nullable|exists:condominios,id'
+        ]);
 
-        session(['admin_condominio_id' => $request->condominio_id]);
+        if ($request->filled('condominio_id')) {
+            session(['admin_condominio_id' => $request->condominio_id]);
+        } else {
+            session()->forget('admin_condominio_id');
+        }
 
-        return redirect()->back()->with('status', 'Contexto alterado com sucesso.');
+        return redirect()->back()->with('status', 'Contexto alterado com sucesso!');
     }
 }

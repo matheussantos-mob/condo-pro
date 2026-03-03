@@ -25,6 +25,7 @@ class EncomendaController extends Controller
 
     public function store(Request $request)
     {
+        // 1. Validação corrigida (sem o lixo de texto no meio)
         $request->validate([
             'apartamento_id' => 'required|exists:apartamentos,id',
             'descricao' => 'required|string|max:255',
@@ -34,10 +35,16 @@ class EncomendaController extends Controller
             'apartamento_id.exists' => 'O apartamento selecionado é inválido.'
         ]);
 
+        $condominioId = (auth()->user()->role === 'admin')
+            ? session('admin_condominio_id')
+            : auth()->user()->condominio_id;
+
+        if (!$condominioId) {
+            return redirect()->back()->withErrors(['erro' => 'Por favor, selecione um condomínio no menu lateral.']);
+        }
+
         $numeros = rand(100, 999);
-
         $letras = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 1);
-
         $codigo = $numeros . $letras;
 
         Encomenda::create([
@@ -46,10 +53,10 @@ class EncomendaController extends Controller
             'descricao' => $request->descricao,
             'setor_estoque' => $request->setor_estoque,
             'codigo_retirada' => $codigo,
-            'recebido_por' => Auth::user()->name,
+            'recebido_por' => auth()->user()->name,
             'status' => 'pendente',
-            'condominio_id' => Auth::user()->condominio_id,
-            'cadastrado_por_id' => Auth::id(),
+            'condominio_id' => $condominioId,
+            'cadastrado_por_id' => auth()->id(),
         ]);
 
         return redirect()->back()->with('status', 'Encomenda registrada!');
