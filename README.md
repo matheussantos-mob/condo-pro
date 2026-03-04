@@ -1,4 +1,4 @@
-# 🚀 Condo-Pro (Nome Temporário)
+# 🚀 Condo-Pro
 
 > **Plataforma Inteligente de Gestão de Encomendas e Notificações Condominiais.**
 
@@ -61,7 +61,6 @@ Prover agilidade na entrega interna, garantir a rastreabilidade das mercadorias 
 ## 🚀 Roadmap (Futuras Melhorias)
 
 - [ ] **Sistema de Convites:** Envio de e-mail assinado para Síndicos e Porteiros definirem suas próprias senhas de acesso.
-- [ ] **Módulo de Ocorrências:** Canal para o síndico registrar avisos gerais aos moradores.
 - [ ] **Dashboard Estatística:** Gráficos de volume de encomendas e tempo médio de retirada.
 - [ ] **Assinatura Digital:** Registro da rubrica do morador no tablet/celular no momento da retirada.
 - [ ] **Integração com API WhatsApp Business:** Para envios 100% automáticos e sem intervenção humana.
@@ -73,7 +72,7 @@ Prover agilidade na entrega interna, garantir a rastreabilidade das mercadorias 
 * **Backend:** PHP 8.x + Laravel 11
 * **Frontend:** Tailwind CSS + Alpine.js + Blade Components
 * **Banco de Dados:** MySQL
-* **Infraestrutura:** Docker (Laravel Sail) / Oracle Cloud
+* **Infraestrutura:** Docker (Laravel Sail)
 * **Processamento de Dados:** Laravel Excel (Maatwebsite)
 
 ---
